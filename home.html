@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VocaBB — Home</title>
+  <style>
+    :root{--bg:#f8fbff;--card:#fff;--muted:#475569;--accent:#0ea5e9;--accent-2:#0284c7;--ok:#16a34a}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#eef6ff);color:#0f172a}
+    .wrap{max-width:920px;margin:28px auto;padding:20px}
+    .brand{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff}
+    .brand h1{margin:0;font-size:20px}
+    .card{background:var(--card);border-radius:12px;padding:18px;margin-top:18px;box-shadow:0 6px 18px rgba(2,20,48,0.06)}
+    .lead{color:var(--muted);margin:6px 0 12px}
+    /* Tabs */
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{padding:8px 12px;border-radius:8px;background:#f1f5f9;border:1px solid rgba(2,6,23,0.04);cursor:pointer;font-weight:600}
+    .tab.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff}
+    .plans{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .plan{border-radius:10px;padding:12px;border:1px solid rgba(2,6,23,0.04);background:linear-gradient(180deg,#fff,#fbfdff)}
+    .plan h3{margin:2px 0 6px}
+    .price{font-size:20px;font-weight:700;color:var(--accent-2)}
+    .muted{color:var(--muted);font-size:14px}
+    .actions{margin-top:12px;display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;font-weight:700}
+    .btn.secondary{background:#eef2ff;color:var(--accent-2);border:1px solid rgba(2,6,23,0.04)}
+    .note{font-size:13px;color:var(--muted);margin-top:10px}
+    .pay-area{margin-top:14px;border-top:1px dashed rgba(2,6,23,0.04);padding-top:14px}
+    .success{padding:10px;border-radius:8px;background:#ecfdf5;color:#065f46;border:1px solid #bbf7d0;margin-top:12px}
+    @media (max-width:720px){.plans{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <h1>VocaBB</h1>
+      <div style="font-size:14px;opacity:.95">Learn roots • quizzes • sentences</div>
+    </div>
+
+    <div class="card">
+      <h2>Welcome to VocaBB</h2>
+      <p class="lead">VocaBB helps students learn word roots, practice matching and sentence writing with small interactive quizzes. Choose a subscription plan below to unlock full access to practice sets, progress tracking, and downloadable practice sheets.</p>
+
+      <div>
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-mode="monthly">Monthly</button>
+          <button class="tab" data-mode="yearly">Yearly</button>
+        </div>
+
+        <div class="plans" id="plans">
+          <div class="plan" data-plan="basic" data-monthly="2.99" data-yearly="49.99">
+            <h3>Basic</h3>
+            <div class="price">$<span class="amount">2.99</span><span class="muted"> / mo</span></div>
+            <p class="muted">Access to weekly quizzes and sentence practice.</p>
+            <div class="actions">
+              <button class="btn select">Select</button>
+              <button class="btn secondary details">Details</button>
+            </div>
+          </div>
+          <div class="plan" data-plan="pro" data-monthly="5.99" data-yearly="99.99">
+            <h3>Pro</h3>
+            <div class="price">$<span class="amount">5.99</span><span class="muted"> / mo</span></div>
+            <p class="muted">All Basic features + progress tracking, downloadable packs, and ad-free.</p>
+            <div class="actions">
+              <button class="btn select">Select</button>
+              <button class="btn secondary details">Details</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pay-area" id="payArea">
+          <div class="muted">Selected plan: <strong id="selectedPlan">None</strong></div>
+          <div style="margin-top:8px">
+            <button class="btn" id="demoPay">Pay (Demo)</button>
+            <button class="btn secondary" id="paypalInfo">PayPal / Stripe (setup)</button>
+          </div>
+
+          <div class="note" id="integrationNote">
+            For live payments: add your PayPal or Stripe keys and follow their docs. The buttons below are placeholders showing where those integrations would go.
+          </div>
+
+          <div id="integrationPlaceholders" style="margin-top:12px">
+            <!-- PayPal placeholder: replace CLIENT_ID with your own to enable -->
+            <div style="margin-bottom:8px">
+              <strong>PayPal (placeholder)</strong>
+              <div class="muted">To enable PayPal Smart Buttons, add the PayPal script with your client-id and render a button here. Example: <code>https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&amp;currency=USD</code></div>
+            </div>
+
+            <div>
+              <strong>Stripe (placeholder)</strong>
+              <div class="muted">To enable Stripe Checkout, create a Checkout Session on your server and redirect the user to Stripe using your publishable key (test mode first).</div>
+            </div>
+          </div>
+
+          <div id="result" aria-live="polite"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal markup will be injected in DOM on load for accessibility
+    (function createModal(){
+      const modalHTML = `
+        <div id="detailsModal" aria-hidden="true" style="display:none;position:fixed;inset:0;z-index:1200;">
+          <div id="modalOverlay" style="position:absolute;inset:0;background:rgba(2,6,23,0.45);"></div>
+          <div role="dialog" aria-modal="true" id="modalContent" style="position:relative;max-width:640px;margin:60px auto;background:#fff;border-radius:12px;padding:18px;box-shadow:0 12px 40px rgba(2,6,23,0.18);">
+            <button id="modalClose" aria-label="Close details" style="position:absolute;right:12px;top:12px;background:#f1f5f9;border:0;padding:6px 8px;border-radius:8px;cursor:pointer">✕</button>
+            <h3 id="modalTitle">Plan details</h3>
+            <div id="modalBody" style="color:var(--muted);margin-top:8px"></div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+    })();
+
+    // Basic tab & plan selection logic
+    const tabs = document.querySelectorAll('.tab');
+    const plans = document.querySelectorAll('.plan');
+    let billing = 'monthly';
+    let selected = null;
+
+    function updatePrices(){
+      plans.forEach(p=>{
+        const amt = billing === 'monthly' ? p.dataset.monthly : p.dataset.yearly;
+        p.querySelector('.amount').textContent = amt;
+        p.querySelector('.muted').textContent = billing === 'monthly' ? ' / mo' : ' / yr';
+      });
+    }
+
+    tabs.forEach(t=>t.addEventListener('click',()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      billing = t.dataset.mode;
+      updatePrices();
+    }));
+
+    document.querySelectorAll('.select').forEach((btn,i)=>{
+      btn.addEventListener('click',()=>{
+        const planEl = btn.closest('.plan');
+        const planId = planEl.dataset.plan;
+        selected = {id:planId, price: billing === 'monthly' ? planEl.dataset.monthly : planEl.dataset.yearly, billing};
+        document.getElementById('selectedPlan').textContent = planId + ' — $' + selected.price + (selected.billing==='monthly'?'/mo':'/yr');
+      });
+    });
+
+    // Details button -> open modal with plan specifics
+    document.querySelectorAll('.details').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const planEl = btn.closest('.plan');
+        const planId = planEl.dataset.plan;
+        const modal = document.getElementById('detailsModal');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        if(planId==='basic'){
+          title.textContent = 'Basic (Starter) — Semester 1 Access';
+          body.innerHTML = '<p>The Starter (Basic) plan gives you access to Semester 1 quizzes — enough material to get started and practice the first half of the year.</p><ul><li>Access to Semester 1 quiz sets</li><li>Interactive matching and sentence practice</li><li>Local progress saved in the browser (demo)</li></ul>';
+        } else if(planId==='pro'){
+          title.textContent = 'Pro — Full Year Access';
+          body.innerHTML = '<p>The Pro plan gives you access to the full year of content — all semesters and extra features.</p><ul><li>Access to all quiz sets for the year</li><li>Progress tracking and downloadable practice packs</li><li>Ad-free experience</li></ul>';
+        } else {
+          title.textContent = 'Plan details';
+          body.textContent = '';
+        }
+        modal.style.display = 'block';
+        modal.setAttribute('aria-hidden','false');
+        // focus close button for accessibility
+        document.getElementById('modalClose').focus();
+      });
+    });
+
+    // Modal close handlers
+    document.addEventListener('click', (e)=>{
+      const modal = document.getElementById('detailsModal');
+      if(!modal) return;
+      const overlay = document.getElementById('modalOverlay');
+      const content = document.getElementById('modalContent');
+      const close = document.getElementById('modalClose');
+      if(e.target === overlay || e.target === close) {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden','true');
+      }
+    });
+
+
+    // Demo payment simulation (no real money moves)
+    document.getElementById('demoPay').addEventListener('click', ()=>{
+      if(!selected){
+        alert('Please select a plan first.');
+        return;
+      }
+      // store demo subscription choice locally
+      localStorage.setItem('vocab.subscription.demo', JSON.stringify(selected));
+      // set a small flag so index.html knows to auto-start the quiz
+      localStorage.setItem('vocab.autoStart','1');
+      // navigate to the quiz start (index.html). index.html will auto-start when it sees the flag.
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('paypalInfo').addEventListener('click', ()=>{
+      alert('To accept live payments, add PayPal or Stripe keys. See the “Try it” instructions provided with the files.');
+    });
+
+    // Initialize prices
+    updatePrices();
+  </script>
+</body>
+</html>

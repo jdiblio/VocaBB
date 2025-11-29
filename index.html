@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Roots Interactive Quiz + Sentences</title>
+<style>
+:root{
+	--ink:#0f172a;--muted:#475569;--line:#e2e8f0;
+	--accent-start:#0ea5e9;--accent-end:#0284c7;--ok:#16a34a;--bad:#dc2626;--bg:#ffffff;
+	--label-width:170px;
+	--bg-top:#f8fbff; /* page background gradient top */
+	--bg-bottom:#eef6ff; /* page background gradient bottom */
+}
+html,body{margin:0;padding:0;background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;}
+.wrap{max-width:920px;margin:28px auto 80px;padding:0 20px;}
+.brand{background:linear-gradient(90deg,var(--accent-start) 0%,var(--accent-end) 100%);color:#fff;padding:14px 18px;margin-bottom:20px;border-radius:10px;box-shadow:0 6px 18px rgba(2,20,48,0.08);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand h1{margin:0;font-size:20px;letter-spacing:.2px;font-weight:700}
+.settings-btn{display:inline-flex;align-items:center;justify-content:center;color:#fff;background:transparent;border:none;padding:6px;border-radius:8px;cursor:pointer}
+.settings-btn svg{width:20px;height:20px;display:block;filter:drop-shadow(0 1px 0 rgba(0,0,0,0.08))}
+.settings-btn:hover{opacity:0.95;transform:translateY(-1px)}
+.card{background:#ffffff;border:1px solid rgba(2,6,23,0.04);border-radius:14px;box-shadow:0 6px 18px rgba(2,20,48,0.04);margin:18px 0;overflow:hidden}
+.banner{background:linear-gradient(90deg,var(--accent-start),var(--accent-end));color:#fff;padding:12px 16px;font-weight:700}
+.content{padding:18px}
+/* layout: use a vertical list container (.grid-2) and each .row defines two columns
+	so labels and inputs stay aligned and consistent down the page */
+.grid-2{display:flex;flex-direction:column;gap:12px;}
+.week-label{font-weight:700;color:var(--accent-start);padding:8px 4px;margin-top:6px;margin-bottom:6px;display:block;font-size:16px}
+.row{display:grid;grid-template-columns:var(--label-width) 1fr;align-items:center;gap:10px;min-height:44px;}
+.row > div{word-break:break-word;padding:6px 4px;}
+/* left column label styling */
+.row > div{font-weight:600;color:var(--muted);font-size:15px}
+.row{padding:8px 0}
+.row:not(:last-child){border-bottom:1px solid rgba(2,6,23,0.03)}
+input.quiz,input.letter,textarea.sentence{
+width:100%;box-sizing:border-box;border:1px solid rgba(2,6,23,0.06);background:#fbfdff;font:inherit;padding:10px 12px;border-radius:10px;
+box-shadow:0 1px 2px rgba(2,6,23,0.03), inset 0 0 0 1px rgba(2,6,23,0.03);transition:box-shadow .15s,background .15s,transform .06s;min-height:40px;
+}
+input.quiz:focus,input.letter:focus,textarea.sentence:focus{outline:none;box-shadow:0 0 0 4px rgba(14,165,233,0.12);background:#f0f9ff}
+input.letter{max-width:80px;text-transform:uppercase;text-align:center;}
+.hint{color:var(--muted);font-size:14px;margin:6px 0 0;}
+.ok{background:#ecfdf5!important;box-shadow:inset 0 0 0 2px #16a34a!important;color:#065f46;}
+.bad{background:#fef2f2!important;box-shadow:inset 0 0 0 2px #dc2626!important;color:#7f1d1d;}
+textarea.sentence{min-height:100px;resize:vertical}
+@media (max-width:560px){
+	/* Stack each row on small screens: label above input */
+	.row{grid-template-columns:1fr;grid-auto-rows:auto;align-items:start;}
+	.row > div{padding-bottom:6px;}
+	.week-label{font-size:16px;margin-top:10px;margin-bottom:6px;}
+}
+</style>
+</head>
+<body>
+<div class="brand"><h1>Week 7-8 Roots — Interactive Quiz</h1>
+	<a class="settings-btn" href="settings.html" title="Settings">
+		<!-- simple gear icon -->
+		<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+			<path d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z" fill="currentColor" opacity="0.95"/>
+			<path d="M19.4 13.5c.04-.5.06-1 .06-1.5s-.02-1-.06-1.5l2.1-1.6a.5.5 0 0 0 .12-.64l-2-3.5a.5.5 0 0 0-.6-.22l-2.5 1a7.9 7.9 0 0 0-1.6-.9l-.4-2.6A.5.5 0 0 0 13.7 1h-3.4a.5.5 0 0 0-.5.42l-.4 2.6c-.56.23-1.08.52-1.58.86l-2.5-1a.5.5 0 0 0-.6.22l-2 3.5a.5.5 0 0 0 .12.64L4.6 10c-.04.5-.06 1-.06 1.5s.02 1 .06 1.5L2.56 14.6a.5.5 0 0 0-.12.64l2 3.5c.14.25.43.36.7.28l2.5-1c.5.34 1.02.63 1.58.86l.4 2.6c.05.26.27.42.5.42h3.4c.26 0 .46-.16.5-.42l.4-2.6c.56-.23 1.08-.52 1.6-.86l2.5 1c.27.09.56-.03.7-.28l2-3.5a.5.5 0 0 0-.12-.64L19.4 13.5z" fill="currentColor" opacity="0.85"/>
+		</svg>
+	</a>
+</div>
+<div class="wrap">
+
+<script>
+// Set a client-side default model for GPT selection if not already set.
+(function(){
+	try{
+		const key = 'vocab.gpt_model';
+		if(!localStorage.getItem(key)){
+			localStorage.setItem(key, 'gpt-5-mini');
+			console.log('vocab.gpt_model defaulted to gpt-5-mini');
+		}
+	}catch(e){console.warn('Failed to set default model', e)}
+})();
+</script>
+
+<!-- I. Root Meanings -->
+<div class="card">
+<div class="banner">I. Root Meanings</div>
+<div class="content">
+<p class="hint">Press Enter in a box to check answer. Delete to try again.</p>
+<div class="grid-2">
+<h3 class="week-label">Week 1</h3>
+<div class="row"><div>ant, anti</div><input class="quiz" data-answers="against opposite"></div>
+<div class="row"><div>hyper</div><input class="quiz" data-answers="too much excess"></div>
+<div class="row"><div>hypo</div><input class="quiz" data-answers="too little under"></div>
+<div class="row"><div>loqu, loc</div><input class="quiz" data-answers="speech thought"></div>
+<div class="row"><div>mag, magn</div><input class="quiz" data-answers="great"></div>
+<h3 class="week-label">Week 2</h3>
+<div class="row"><div>grav</div><input class="quiz" data-answers="heavy"></div>
+<div class="row"><div>man</div><input class="quiz" data-answers="hand"></div>
+<div class="row"><div>neo</div><input class="quiz" data-answers="new"></div>
+<div class="row"><div>phil</div><input class="quiz" data-answers="love"></div>
+<div class="row"><div>sub</div><input class="quiz" data-answers="under"></div>
+<h3 class="week-label">Week 3</h3>
+<div class="row"><div>culp</div><input class="quiz" data-answers="blame fault"></div>
+<div class="row"><div>fus</div><input class="quiz" data-answers="pour"></div>
+<div class="row"><div>luc, lum</div><input class="quiz" data-answers="light"></div>
+<div class="row"><div>mor, mort</div><input class="quiz" data-answers="dead"></div>
+<div class="row"><div>nat, nasc</div><input class="quiz" data-answers="born"></div>
+<h3 class="week-label">Week 4</h3>
+<div class="row"><div>astr, aster</div><input class="quiz" data-answers="star"></div>
+<div class="row"><div>ab</div><input class="quiz" data-answers="from away apart"></div>
+<div class="row"><div>bene, bon</div><input class="quiz" data-answers="good"></div>
+<div class="row"><div>mal</div><input class="quiz" data-answers="bad"></div>
+<div class="row"><div>cor, cardi</div><input class="quiz" data-answers="heart"></div>
+<h3 class="week-label">Week 5</h3>
+<div class="row"><div>cogn, gno</div><input class="quiz" data-answers="know"></div>
+<div class="row"><div>contra, contro</div><input class="quiz" data-answers="against"></div>
+<div class="row"><div>ambi, amphi</div><input class="quiz" data-answers="both"></div>
+<div class="row"><div>duc, duct</div><input class="quiz" data-answers="lead"></div>
+<div class="row"><div>ced, cess</div><input class="quiz" data-answers="yield go"></div>
+<h3 class="week-label">Week 6</h3>
+<div class="row"><div>uni</div><input class="quiz" data-answers="one"></div>
+<div class="row"><div>dox</div><input class="quiz" data-answers="opinion praise"></div>
+<div class="row"><div>nym</div><input class="quiz" data-answers="name"></div>
+<div class="row"><div>arch</div><input class="quiz" data-answers="chief first"></div>
+<div class="row"><div>geo</div><input class="quiz" data-answers="earth"></div>
+<h3 class="week-label">Week 7</h3>
+<div class="row"><div>Chron</div><input class="quiz" data-answers="time"></div>
+<div class="row"><div>Circum</div><input class="quiz" data-answers="around"></div>
+<div class="row"><div>Fore</div><input class="quiz" data-answers="before"></div>
+<div class="row"><div>Pan</div><input class="quiz" data-answers="all"></div>
+<div class="row"><div>Retro</div><input class="quiz" data-answers="backward"></div>
+<h3 class="week-label">Week 8</h3>
+<div class="row"><div>Mut</div><input class="quiz" data-answers="change"></div>
+<div class="row"><div>Celer</div><input class="quiz" data-answers="swift"></div>
+<div class="row"><div>Voc, Vok</div><input class="quiz" data-answers="call"></div>
+<div class="row"><div>Quad</div><input class="quiz" data-answers="four"></div>
+<div class="row"><div>Medi</div><input class="quiz" data-answers="middle"></div>
+<h3 class="week-label">Week 9</h3>
+<div class="row"><div>Cide, Cise</div><input class="quiz" data-answers="cut down kill"></div>
+<div class="row"><div>Omni</div><input class="quiz" data-answers="all every"></div>
+<div class="row"><div>Pod, Pedi Vok</div><input class="quiz" data-answers="foot"></div>
+<div class="row"><div>Curr, </div><input class="quiz" data-answers="run"></div>
+<div class="row"><div>Ver</div><input class="quiz" data-answers="true"></div>
+<h3 class="week-label">Week 10</h3>
+<div class="row"><div>se</div><input class="quiz" data-answers="apart away"></div>
+<div class="row"><div>cata</div><input class="quiz" data-answers="down"></div>
+<div class="row"><div>miss, mit</div><input class="quiz" data-answers="send"></div>
+<div class="row"><div>sed, sess,sid</div><input class="quiz" data-answers="sit"></div>
+<div class="row"><div>il, ir, ig, im, in</div><input class="quiz" data-answers="not"></div>
+<h3 class="week-label">Week 11</h3>
+<div class="row"><div>tact, tig, ting, tang, tag</div><input class="quiz" data-answers="touch"></div>
+<div class="row"><div>men</div><input class="quiz" data-answers="remember"></div>
+<div class="row"><div>morph</div><input class="quiz" data-answers="form"></div>
+<div class="row"><div>mon</div><input class="quiz" data-answers="to warn"></div>
+<div class="row"><div>trans</div><input class="quiz" data-answers="across"></div>
+<h3 class="week-label">Week 12</h3>
+<div class="row"><div>hemi, demi, semi</div><input class="quiz" data-answers="half"></div>
+<div class="row"><div>co, col, com, con</div><input class="quiz" data-answers="with together"></div>
+<div class="row"><div>Port</div><input class="quiz" data-answers="carry"></div>
+<div class="row"><div>pos, pon, pound</div><input class="quiz" data-answers="put place"></div>
+<div class="row"><div>gen</div><input class="quiz" data-answers="birth race"></div>
+</div>
+</div>
+</div>
+
+
+<div class="card">
+<div class="banner">II. Example Words</div>
+<div class="content">
+<p class="hint">Press Enter in a box to check answer. Delete to try again.</p>
+<div class="grid-2">
+week 1
+<div class="row"><div>ant, anti</div><input class="quiz" data-answers="antithesis"></div>
+<div class="row"><div>hyper</div><input class="quiz" data-answers="hyperbole"></div>
+<div class="row"><div>hypo</div><input class="quiz" data-answers="hypochondria"></div>
+<div class="row"><div>loqu, loc</div><input class="quiz" data-answers="loquacious"></div>
+<div class="row"><div>mag, magn</div><input class="quiz" data-answers="magnanimous"></div>
+week 2
+<div class="row"><div>grav</div><input class="quiz" data-answers="grave"></div>
+<div class="row"><div>man</div><input class="quiz" data-answers="emancipate"></div>
+<div class="row"><div>neo</div><input class="quiz" data-answers="neophyte"></div>
+<div class="row"><div>phil</div><input class="quiz" data-answers="bibliophile"></div>
+<div class="row"><div>sub</div><input class="quiz" data-answers="subjugate"></div>
+week 3
+<div class="row"><div>culp</div><input class="quiz" data-answers="culpable"></div>
+<div class="row"><div>fus</div><input class="quiz" data-answers="effusive"></div>
+<div class="row"><div>luc, lum</div><input class="quiz" data-answers="lucid"></div>
+<div class="row"><div>mor, mort</div><input class="quiz" data-answers="morbid"></div>
+<div class="row"><div>nat, nasc</div><input class="quiz" data-answers="innate"></div>
+week 4
+<div class="row"><div>astr, aster</div><input class="quiz" data-answers="asterisk"></div>
+<div class="row"><div>ab</div><input class="quiz" data-answers="absolve"></div>
+<div class="row"><div>bene, bon</div><input class="quiz" data-answers="benefactor"></div>
+<div class="row"><div>mal</div><input class="quiz" data-answers="malevolent"></div>
+<div class="row"><div>cor, cardi</div><input class="quiz" data-answers="cordial"></div>
+week 5
+<div class="row"><div>cogn, gno</div><input class="quiz" data-answers="incognito"></div>
+<div class="row"><div>contra, contro</div><input class="quiz" data-answers="incontrovertible"></div>
+<div class="row"><div>ambi, amphi</div><input class="quiz" data-answers="ambivalent"></div>
+<div class="row"><div>duc, duct</div><input class="quiz" data-answers="induce"></div>
+<div class="row"><div>ced, cess</div><input class="quiz" data-answers="incessant"></div>
+week 6
+<div class="row"><div>uni</div><input class="quiz" data-answers="unilateral"></div>
+<div class="row"><div>dox</div><input class="quiz" data-answers="paradox"></div>
+<div class="row"><div>nym</div><input class="quiz" data-answers="pseudonym"></div>
+<div class="row"><div>arch</div><input class="quiz" data-answers="matriarch"></div>
+<div class="row"><div>geo</div><input class="quiz" data-answers="geothermal"></div>
+week 7
+<div class="row"><div>Chron</div><input class="quiz" data-answers="anachronism"></div>
+<div class="row"><div>Circum</div><input class="quiz" data-answers="circumlocution"></div>
+<div class="row"><div>Fore</div><input class="quiz" data-answers="foreboding"></div>
+<div class="row"><div>Pan</div><input class="quiz" data-answers="panacea"></div>
+<div class="row"><div>Retro</div><input class="quiz" data-answers="retrospective"></div>
+week 8
+<div class="row"><div>Mut</div><input class="quiz" data-answers="immutable"></div>
+<div class="row"><div>Celer</div><input class="quiz" data-answers="celerity"></div>
+<div class="row"><div>Voc, Vok</div><input class="quiz" data-answers="evocative"></div>
+<div class="row"><div>Quad</div><input class="quiz" data-answers="quadruple"></div>
+<div class="row"><div>Medi</div><input class="quiz" data-answers="mediate"></div>
+week 9
+<div class="row"><div>cide, cide</div><input class="quiz" data-answers="genocide"></div>
+<div class="row"><div>omni</div><input class="quiz" data-answers="omnivorous"></div>
+<div class="row"><div>pod, pedi</div><input class="quiz" data-answers="impediment"></div>
+<div class="row"><div>curr, curs</div><input class="quiz" data-answers="concurrent"></div>
+<div class="row"><div>ver</div><input class="quiz" data-answers="veracity"></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="banner">III. Matching — Type the Number</div>
+<div class="content">
+<p class="hint">Match each word with its definition by typing the number. Press Enter to check.</p>
+
+<h3 class="week-label">Week 1</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Antibiotic</div><div>1. Excessively active</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Hyperactive</div><div>2. Very talkative</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Hypodermic</div><div>3. Medicine that works against bacteria</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Loquacious</div><div>4. Under the skin</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Magnify</div><div>5. To make something appear greater</div></div>
+</div>
+
+<h3 class="week-label">Week 2</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Gravity</div><div>1. Relating to newborn babies</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Manual</div><div>2. Done by hand</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Neonatal</div><div>3. The love of wisdom</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Philosophy</div><div>4. The force that pulls objects down (heavy)</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Submarine</div><div>5. A vessel that goes under water</div></div>
+</div>
+
+<h3 class="week-label">Week 3</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Culprit</div><div>1. To light up</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Diffuse</div><div>2. A person who is to blame</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Illuminate</div><div>3. Subject to death</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Mortal</div><div>4. The circumstances of being born</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Nativity</div><div>5. To pour out and spread widely</div></div>
+</div>
+
+<h3 class="week-label">Week 4</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Astronomy</div><div>1. Something good or helpful</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Abnormal</div><div>2. Relating to the heart</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Benefit</div><div>3. Away from what is normal</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Malfunction</div><div>4. To work badly or incorrectly</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Cardiac</div><div>5. The study of stars and space</div></div>
+</div>
+
+<h3 class="week-label">Week 5</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Recognize</div><div>1. To go back or withdraw</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Contradict</div><div>2. Able to use both hands equally</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Ambidextrous</div><div>3. To know or identify something</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Conduct</div><div>4. To lead or guide</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Recede</div><div>5. To speak against or oppose</div></div>
+</div>
+
+<h3 class="week-label">Week 6</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Unicycle</div><div>1. The study of Earth's surface</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Orthodox</div><div>2. Following accepted opinions or beliefs</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Synonym</div><div>3. The chief builder or designer</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Architect</div><div>4. A cycle with one wheel</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Geography</div><div>5. A word with the same name/meaning</div></div>
+</div>
+
+<h3 class="week-label">Week 7</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Chronicle</div><div>1. Moving backward</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Circumnavigate</div><div>2. A record of events in time order</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Foretell</div><div>3. A disease affecting all people everywhere</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Pandemic</div><div>4. To travel all the way around something</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Retrograde</div><div>5. To predict something before it happens</div></div>
+</div>
+
+<h3 class="week-label">Week 8</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Mutate</div><div>1. To settle a dispute from the middle</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Accelerate</div><div>2. One of four parts</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Vocation</div><div>3. To change form</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Quadrant</div><div>4. A calling or career</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Mediate</div><div>5. To move swiftly or speed up</div></div>
+</div>
+
+<h3 class="week-label">Week 9</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Homicide</div><div>1. To confirm something is true</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Omnipresent</div><div>2. Flowing or running movement</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Podium</div><div>3. Present everywhere at once</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Current</div><div>4. The killing of a person</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Verify</div><div>5. A raised platform to stand on</div></div>
+</div>
+
+<h3 class="week-label">Week 10</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Separate</div><div>1. A list arranged down/throughout</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Catalog</div><div>2. Sitting in one place; inactive</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Transmit</div><div>3. To send across or communicate</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Sedentary</div><div>4. Not able to be read</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Illegible</div><div>5. To set apart or divide</div></div>
+</div>
+
+<h3 class="week-label">Week 11</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Contact</div><div>1. To carry across</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Memorial</div><div>2. To touch or communicate with</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Metamorphosis</div><div>3. To watch and warn</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Monitor</div><div>4. Something to help remember</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Transport</div><div>5. A change in form or shape</div></div>
+</div>
+
+<h3 class="week-label">Week 12</h3>
+<div class="grid-2">
+<div class="row"><div><input class="letter" maxlength="2" data-answers="3"> Hemisphere</div><div>1. People born at the same time</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="5"> Cooperate</div><div>2. To put off until later</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="4"> Transport</div><div>3. Half of a sphere or globe</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="2"> Postpone</div><div>4. To carry from one place to another</div></div>
+<div class="row"><div><input class="letter" maxlength="2" data-answers="1"> Generation</div><div>5. To work together with others</div></div>
+</div>
+
+</div>
+</div>
+
+<!-- IIII. Sentence Practice -->
+<div class="card">
+<div class="banner">IIII. Sentence Practice</div>
+<div class="content">
+<p class="hint">Type each sentence exactly as shown and press Enter to check.</p>
+<textarea class="sentence" data-answer="There should be no doubts about the veracity of the suspect's statement. He always tells the truth." placeholder="Sentence 1 (veracity)"></textarea>
+<textarea class="sentence" data-answer="Theropods were omnivorous dinosaurs, they ate plants and other animals and insects" placeholder="Sentence 2 (omnivorous)"></textarea>
+<textarea class="sentence" data-answer="His speech impediment made it difficult to understand what he was saying" placeholder="Sentence 3 (impediment)"></textarea>
+</div>
+</div>
+</div>
+
+<script>
+// Apply saved theme (colors) from localStorage if present
+(function(){
+		try{
+				const raw=localStorage.getItem('vocab.theme');
+				if(!raw) return;
+				const theme=JSON.parse(raw);
+				const root=document.documentElement;
+				Object.keys(theme).forEach(k=>root.style.setProperty(k, theme[k]));
+		}catch(e){console.warn('Failed to apply saved theme',e)}
+})();
+
+function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
+
+// --- Test flow: intro modal, timer, and grading at finish ---
+(function(){
+	// Inject intro modal and test controls UI
+	const wrap = document.querySelector('.wrap');
+	if(!wrap) return;
+
+	// Intro modal (shows before starting test)
+	const introHTML = `
+		<div id="introModal" style="position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(2,6,23,0.45);">
+			<div style="background:#fff;border-radius:12px;max-width:720px;padding:20px;box-shadow:0 12px 40px rgba(2,6,23,0.18);">
+				<h2 style="margin-top:0">Semester 1 — Quiz</h2>
+				<p style="color:#475569">This test covers Semester 1 material. Your time will be tracked and the test will report your final score at the end. During the test you will not receive immediate feedback for each answer; results appear after you finish.</p>
+				<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+					<button id="startTestBtn" style="background:#0ea5e9;color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:700">Start Test</button>
+				</div>
+			</div>
+		</div>
+	`;
+	document.body.insertAdjacentHTML('beforeend', introHTML);
+
+		// Ensure Start button has a direct listener (more reliable across browsers)
+		setTimeout(()=>{
+			const startBtn = document.getElementById('startTestBtn');
+			if(startBtn && !startBtn.__hasStartHandler){
+				startBtn.addEventListener('click', e=>{e.preventDefault(); startTestFlow();});
+				startBtn.__hasStartHandler = true;
+			}
+		}, 0);
+
+		// Test controls (hidden until start)
+		const controlsHTML = `
+			<div id="testControls" style="display:none;margin:12px 0;align-items:center;gap:12px;">
+				<div style="font-weight:700">Time: <span id="testTimer">00:00</span></div>
+				<button id="finishTestBtn" style="background:#16a34a;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700">Finish Test</button>
+				<button id="restartTestBtn" style="background:#0ea5e9;color:#fff;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700">Restart Test</button>
+				<button id="viewProgressBtn" style="background:#eef2ff;color:#0284c7;border:1px solid rgba(2,6,23,0.04);padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700">View Progress</button>
+				<div id="testResult" style="margin-left:12px;color:#0f172a;font-weight:700;display:none"></div>
+			</div>
+		`;
+	// Insert controls below brand
+	const brand = document.querySelector('.brand');
+	brand.insertAdjacentHTML('afterend', controlsHTML);
+
+	let timerInterval = null;
+	let startTs = null;
+
+	function formatTime(ms){
+		const totalSec = Math.floor(ms/1000);
+		const m = String(Math.floor(totalSec/60)).padStart(2,'0');
+		const s = String(totalSec%60).padStart(2,'0');
+		return m+':'+s;
+	}
+
+	function startTimer(){
+		startTs = Date.now();
+		const timerEl = document.getElementById('testTimer');
+		timerInterval = setInterval(()=>{
+			timerEl.textContent = formatTime(Date.now()-startTs);
+		},250);
+	}
+	function stopTimer(){
+		if(timerInterval) clearInterval(timerInterval);
+		timerInterval = null;
+	}
+
+		// Grading: check all inputs/textarea against data-answers or data-answer
+		function gradeAll(){
+			const els = Array.from(document.querySelectorAll('input.quiz,input.letter,textarea.sentence'));
+			let total = 0, correct = 0;
+			els.forEach(el=>{
+				// skip empty fields from total? keep as incorrect to encourage answers
+				const answers = (el.dataset.answers || el.dataset.answer || '').split(',').map(norm).filter(Boolean);
+				const val = norm(el.value);
+				total += 1;
+				if(answers.length && answers.includes(val)){
+					correct += 1;
+					el.classList.remove('bad');
+					el.classList.add('ok');
+				} else {
+					el.classList.remove('ok');
+					el.classList.add('bad');
+				}
+			});
+			return {total,correct};
+		}
+
+		// Start test flow (used by the Start button, auto-start and other triggers)
+		function startTestFlow(){
+			// hide intro
+			const intro = document.getElementById('introModal');
+			if(intro) intro.style.display = 'none';
+			// show controls
+			const controls = document.getElementById('testControls');
+			if(controls) controls.style.display = 'flex';
+			const result = document.getElementById('testResult'); if(result) result.style.display = 'none';
+			// clear previous marks
+			document.querySelectorAll('input.quiz,input.letter,textarea.sentence').forEach(el=>el.classList.remove('ok','bad'));
+			// start timer
+			startTimer();
+			// focus first input if available
+			const first = document.querySelector('input.quiz, input.letter, textarea.sentence');
+			if(first) first.focus();
+		}
+
+		// Attach a delegated click handler for the start button so it works even if DOM changes
+		document.addEventListener('click', (e)=>{
+			const btn = e.target && (e.target.id === 'startTestBtn' || e.target.closest && e.target.closest('#startTestBtn'));
+			if(btn){
+				e.preventDefault();
+				startTestFlow();
+			}
+		});
+
+		// Auto-start when coming from the demo-pay flow on home.html
+		try{
+			if(localStorage.getItem('vocab.autoStart') === '1'){
+				// remove the flag so auto-start happens only once
+				localStorage.removeItem('vocab.autoStart');
+				// hide intro and start the test automatically
+				const intro = document.getElementById('introModal');
+				if(intro) intro.style.display = 'none';
+				document.getElementById('testControls').style.display = 'flex';
+				document.getElementById('testResult').style.display = 'none';
+				document.querySelectorAll('input.quiz,input.letter,textarea.sentence').forEach(el=>el.classList.remove('ok','bad'));
+				startTimer();
+				const first = document.querySelector('input.quiz, input.letter, textarea.sentence');
+				if(first) first.focus();
+			}
+		}catch(e){console.warn('autoStart check failed',e)}
+
+		// Finish button handler
+		document.getElementById('finishTestBtn').addEventListener('click', ()=>{
+			stopTimer();
+			const elapsedMs = Date.now()-startTs;
+			const {total,correct} = gradeAll();
+			const pct = total?Math.round((correct/total)*100):0;
+			const resultEl = document.getElementById('testResult');
+			resultEl.style.display = 'block';
+			resultEl.textContent = `Score: ${correct}/${total} (${pct}%) — Time: ${formatTime(elapsedMs)}`;
+			// record attempt
+			try{ recordAttempt(correct,total,elapsedMs); }catch(e){}
+			// scroll to results
+			resultEl.scrollIntoView({behavior:'smooth',block:'center'});
+		});
+
+		// Record attempt to localStorage
+		function recordAttempt(correct,total,elapsedMs){
+			try{
+				const key = 'vocab.attempts';
+				const raw = localStorage.getItem(key);
+				const attempts = raw ? JSON.parse(raw) : [];
+				const attempt = {ts:Date.now(), correct, total, pct: total?Math.round((correct/total)*100):0, timeMs: elapsedMs};
+				attempts.push(attempt);
+				localStorage.setItem(key, JSON.stringify(attempts));
+				return attempts;
+			}catch(e){console.warn('Failed to record attempt',e);return null}
+		}
+
+		// Restart test: clear marks, reset timer and start fresh
+		function restartTest(){
+			stopTimer();
+			document.getElementById('testResult').style.display = 'none';
+			document.querySelectorAll('input.quiz,input.letter,textarea.sentence').forEach(el=>{el.classList.remove('ok','bad');el.value='';});
+			startTs = Date.now();
+			// reset timer display and start
+			document.getElementById('testTimer').textContent = '00:00';
+			startTimer();
+			const first = document.querySelector('input.quiz, input.letter, textarea.sentence'); if(first) first.focus();
+		}
+
+		document.getElementById('restartTestBtn').addEventListener('click', ()=>{
+			// confirm restart
+			if(confirm('Restart the test? This will clear current answers and reset the timer.')){
+					restartTest();
+			}
+		});
+
+		// Remove immediate Enter-check behavior: prevent form submit but do not grade on Enter
+		document.querySelectorAll('input.quiz,input.letter,textarea.sentence').forEach(el=>{
+			el.addEventListener('keydown', e=>{
+				if(e.key === 'Enter'){
+					e.preventDefault();
+					// do nothing else — immediate feedback disabled
+				}
+			});
+			// keep input clearing behavior for classes
+			el.addEventListener('input', ()=>{ if(!el.value) el.classList.remove('ok','bad'); });
+		});
+
+
+
+		// Progress modal (canvas chart)
+		(function createProgressModal(){
+			const html = `
+				<div id="progressModal" style="display:none;position:fixed;inset:0;z-index:1200;">
+					<div id="progressOverlay" style="position:absolute;inset:0;background:rgba(2,6,23,0.45);"></div>
+					<div style="position:relative;max-width:760px;margin:40px auto;background:#fff;border-radius:12px;padding:16px;box-shadow:0 12px 40px rgba(2,6,23,0.18);">
+						<button id="progressClose" aria-label="Close progress" style="position:absolute;right:12px;top:12px;background:#f1f5f9;border:0;padding:6px 8px;border-radius:8px;cursor:pointer">✕</button>
+						<h3 style="margin-top:4px">Progress — Scores by Attempt</h3>
+						<canvas id="progressCanvas" width="700" height="280" style="width:100%;height:auto;border:1px solid rgba(2,6,23,0.04);border-radius:8px;background:#fff"></canvas>
+						<div style="margin-top:8px;color:var(--muted)">Each point shows your percentage score for that attempt (most recent on the right).</div>
+					</div>
+				</div>
+			`;
+			document.body.insertAdjacentHTML('beforeend', html);
+		})();
+
+		function drawProgress(){
+			try{
+				const raw = localStorage.getItem('vocab.attempts');
+				const attempts = raw ? JSON.parse(raw) : [];
+				const canvas = document.getElementById('progressCanvas');
+				const ctx = canvas.getContext('2d');
+				const w = canvas.width; const h = canvas.height;
+				ctx.clearRect(0,0,w,h);
+				if(!attempts.length){
+					ctx.fillStyle = '#475569'; ctx.font = '16px system-ui'; ctx.fillText('No attempts recorded yet.', 20, 40); return;
+				}
+					// draw axes and grid
+					const padL = 50; const padR = 20; const plotW = w - padL - padR; const plotH = h - 60;
+					const originX = padL; const originY = 10 + plotH;
+					// grid horizontal lines (0..100 every 20)
+					ctx.lineWidth = 1;
+					for(let val=0; val<=100; val+=20){
+						const yy = 10 + (1 - (val/100)) * plotH;
+						ctx.strokeStyle = '#eef6fb'; ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(w - padR, yy); ctx.stroke();
+						ctx.fillStyle = '#6b7280'; ctx.font = '12px system-ui'; ctx.fillText(val.toString(), 6, yy+4);
+					}
+					// vertical grid lines for each attempt
+					const step = plotW / Math.max(1, attempts.length-1);
+					for(let i=0;i<attempts.length;i++){
+						const x = padL + i*step;
+						ctx.strokeStyle = '#f3f7fb'; ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, originY); ctx.stroke();
+					}
+					// axis lines
+					ctx.strokeStyle = '#dfeffb'; ctx.beginPath(); ctx.moveTo(padL,10); ctx.lineTo(padL,originY); ctx.lineTo(w-padR,originY); ctx.stroke();
+
+					// plot points and connecting line
+					ctx.strokeStyle = '#0ea5e9'; ctx.fillStyle = '#0ea5e9'; ctx.lineWidth = 2; ctx.beginPath();
+					attempts.forEach((a,i)=>{
+						const x = padL + i*step;
+						const y = 10 + (1 - (a.pct/100)) * plotH;
+						if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+					});
+					ctx.stroke();
+					// draw points and guide lines
+					attempts.forEach((a,i)=>{
+						const x = padL + i*step;
+						const y = 10 + (1 - (a.pct/100)) * plotH;
+						// light guide lines from point to axes
+						ctx.strokeStyle = 'rgba(14,165,233,0.12)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x,originY); ctx.stroke();
+						ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(padL,y); ctx.stroke();
+						// point
+						ctx.fillStyle = '#0ea5e9'; ctx.beginPath(); ctx.arc(x,y,4,0,Math.PI*2); ctx.fill();
+					});
+					// x labels (attempt numbers)
+					ctx.fillStyle='#6b7280'; ctx.font='12px system-ui';
+					attempts.forEach((a,i)=>{
+						const x = padL + i*step; ctx.fillText((i+1).toString(), x-6, h-10);
+					});
+			}catch(e){console.warn('drawProgress failed',e)}
+		}
+
+		// open/close handlers for progress modal
+		document.getElementById('viewProgressBtn').addEventListener('click', ()=>{
+			const modal = document.getElementById('progressModal');
+			if(!modal) return; modal.style.display='block';
+			drawProgress();
+		});
+		document.addEventListener('click', (e)=>{
+			const modal = document.getElementById('progressModal'); if(!modal) return;
+			const overlay = document.getElementById('progressOverlay'); const close = document.getElementById('progressClose');
+			if(e.target === overlay || e.target === close) modal.style.display='none';
+		});
+
+})();
+
+</script>
+</body>
+</html>
+
+<!-- II. Matching -->
+<div class="card">
+<div class="banner">II. Matching — Type the Letter (A–E)</div>
+<div class="content">
+<p class="hint">Write the letter next to each word, then press Enter to check.</p>
+<div>
+<div>1. <input class="letter" maxlength="1" data-answers="e"> Chronicle</div>
+<div>2. <input class="letter" maxlength="1" data-answers="d"> Circumnavigate</div>
+<div>3. <input class="letter" maxlength="1" data-answers="c"> Foretell</div>
+<div>4. <input class="letter" maxlength="1" data-answers="a"> Pandemic</div>
+<div>5. <input class="letter" maxlength="1" data-answers="b"> Retrograde</div>
+<div>6. <input class="letter" maxlength="1" data-answers="e"> </div>
+<div>7. <input class="letter" maxlength="1" data-answers="d"> </div>
+<div>8. <input class="letter" maxlength="1" data-answers="c"> </div>
+<div>9. <input class="letter" maxlength="1" data-answers="a"> </div>
+<div>10. <input class="letter" maxlength="1" data-answers="b"> </div>
+</div>
+				<p class="hint">
+					<strong>A.</strong> Affecting or including everyone
+					&nbsp; <strong>B.</strong> Going back
+					&nbsp; <strong>C.</strong> Prediction before event
+					&nbsp; <strong>D.</strong> Circular path
+					&nbsp; <strong>E.</strong> Arrange events in time
+				</p>
+</div>
+</div>
+
+<!-- III. Sentence Practice -->
+<div class="card">
+<div class="banner">III. Sentence Practice</div>
+<div class="content">
+<p class="hint">Type each sentence exactly as shown and press Enter to check.</p>
+<textarea class="sentence" data-answer="There should be no doubts about the veracity of the suspect's statement. He always tells the truth." placeholder="Sentence 1 (veracity)"></textarea>
+<textarea class="sentence" data-answer="Theropods were omnivorous dinosaurs, they ate plants and other animals and insects" placeholder="Sentence 2 (omnivorous)"></textarea>
+<textarea class="sentence" data-answer="His speech impediment made it difficult to understand what he was saying" placeholder="Sentence 3 (impediment)"></textarea>
+</div>
+</div>
+</div>
+
+<script>
+// Apply saved theme (colors) from localStorage if present
+(function(){
+		try{
+				const raw=localStorage.getItem('vocab.theme');
+				if(!raw) return;
+				const theme=JSON.parse(raw);
+				const root=document.documentElement;
+				Object.keys(theme).forEach(k=>root.style.setProperty(k, theme[k]));
+		}catch(e){console.warn('Failed to apply saved theme',e)}
+})();
+
+function norm(s){return(String(s||"")).toLowerCase().replace(/[^a-z0-9]/g,'');}
